@@ -11,6 +11,10 @@ h1 { color: #2f3640; margin: 0; }
 .view{display:none;} .active{display:block;}
 .grid-kpi,.grid-graficos{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;}
 .card{background:#fff;padding:15px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-canvas{width:100%!important;height:180px!important;}
+canvas {
+      width: 100% !important;
+      height: 180px !important;
+      max-height: 180px !important;
+    }
 .separador_A{height:12px;border-bottom:5px solid #3476bd;margin-bottom:15px;}
 .separador_B{height:2px;border-bottom:15px solid #fff;margin-bottom:15px;}
