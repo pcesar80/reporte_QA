@@ -1,20 +1,169 @@
-body { font-family: Arial; margin: 20px; background: #f5f6fa; }
-.header { display:flex; justify-content: space-between; align-items:center; }
-h1 { color: #2f3640; margin: 0; }
-.logo { height: 50px; }
-.proyecto-titulo { font-size: 0.99em; margin-left: 10px; color: #555; }
-.barra-superior { display:flex; gap:10px; margin-bottom:15px; }
-.panel-derecho { display:flex; gap:10px; align-items:center; }
-.tabs { display:flex; gap:10px; justify-content:center; margin-top:10px; }
-.tab-button { padding:5px 10px; border:1px solid #ccc; cursor:pointer; }
-.tab-button.active { background:#007bff; color:#fff; }
-.view{display:none;} .active{display:block;}
-.grid-kpi,.grid-graficos{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;}
-.card{background:#fff;padding:15px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-canvas {
-      width: 100% !important;
-      height: 180px !important;
-      max-height: 180px !important;
-    }
-.separador_A{height:12px;border-bottom:5px solid #3476bd;margin-bottom:15px;}
-.separador_B{height:2px;border-bottom:15px solid #fff;margin-bottom:15px;}
+/* ===== RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== BODY ===== */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f4f6f9;
+  color: #333;
+  padding: 20px;
+}
+
+/* ===== TITULOS ===== */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+
+/* ===== CONTENEDORES ===== */
+.container {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ===== FILTROS ===== */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.filters input,
+.filters select,
+.filters button {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.filters button {
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  border: none;
+}
+
+.filters button:hover {
+  background-color: #0056b3;
+}
+
+/* ===== INPUT FILE ===== */
+input[type="file"] {
+  margin-bottom: 10px;
+}
+
+/* ===== GRAFICOS ===== */
+.chart-container {
+  width: 100%;
+  height: 400px;
+}
+
+/* ===== TABLA ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* ===== ESTADOS ===== */
+.estado-ok {
+  color: green;
+  font-weight: bold;
+}
+
+.estado-error {
+  color: red;
+  font-weight: bold;
+}
+
+.estado-warning {
+  color: orange;
+  font-weight: bold;
+}
+
+/* ===== TOP 5 ===== */
+.top-list {
+  list-style: none;
+}
+
+.top-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* ===== BOTONES ===== */
+.btn {
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* ===== PDF EXPORT (IMPORTANTE) ===== */
+#dashboard {
+  background: white;
+  padding: 20px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+  }
+
+  .chart-container {
+    height: 300px;
+  }
+
+  table {
+    font-size: 12px;
+  }
+}
