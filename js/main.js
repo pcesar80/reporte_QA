@@ -21,10 +21,38 @@ if(est)estado[est]=(estado[est]||0)+1;
 if(t.severidad)severidad[t.severidad]=(severidad[t.severidad]||0)+1;
 if(t.prioridad)prioridad[t.prioridad]=(prioridad[t.prioridad]||0)+1;
 
-if(["closed","cerrado","done"].includes(estL))return;
-
 const inicio=parseFecha(t["fecha de inicio"]);
-if(!inicio){sinFecha.push({id,version:t["versión"],estado:est});return;}
+const fin=parseFecha(t["fecha de finalización"]);
+
+// 🔴 CLOSED → validar inicio Y fin
+if(["closed","cerrado","done"].includes(estL)){
+  if(!inicio || !fin){
+
+    let motivo="";
+    if(!inicio && !fin) motivo="Falta inicio y fin";
+    else if(!inicio) motivo="Falta inicio";
+    else if(!fin) motivo="Falta fin";
+
+    sinFecha.push({
+      id,
+      version:t["versión"],
+      estado:est,
+      motivo
+    });
+  }
+  return;
+}
+
+// 🟡 NO CLOSED → validar inicio
+if(!inicio){
+  sinFecha.push({
+    id,
+    version:t["versión"],
+    estado:est,
+    motivo:"Falta inicio"
+  });
+  return;
+}
 
 const dias=Math.floor((new Date()-inicio)/86400000);
 tareas.push({id,asunto:t.asunto||"-",estado:est,dias});
@@ -47,6 +75,7 @@ sinFecha.map(t=>`
 <td><a href="https://openproject.casademoneda.gob.ar/projects/nuevo-sistema-rrhh/work_packages/${t.id}/relations" target="_blank">${t.id}</a></td>
 <td>${t.version}</td>
 <td>${t.estado}</td>
+<td>${t.motivo||""}</td>
 </tr>`).join("");
 
 document.querySelector("#tablaTodos tbody").innerHTML=
