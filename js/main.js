@@ -64,7 +64,7 @@ generarTabla("tablaPrioridad",prioridad);
 crearGraficoUniforme("estadoChart","severidadChart","prioridadChart",{estado,severidad,prioridad});
 }
 
-function cargarDesdeOpenProject(){
+/*function cargarDesdeOpenProject(){
 const w=window.open("https://openproject.casademoneda.gob.ar","");
 setTimeout(()=>{
 if(!w||w.closed){
@@ -73,4 +73,28 @@ alert("⚠️ Debes iniciar sesión en OpenProject primero");
 window.open("https://openproject.casademoneda.gob.ar/projects/nuevo-sistema-rrhh/work_packages.csv?query_id=960");
 }
 },1500);
+}*/
+function cargarDesdeOpenProject(){
+
+  // 🔹 Mostrar aviso SIEMPRE
+  alert("⚠️ Recordá: debés estar logueado en OpenProject para poder descargar el CSV");
+
+  // 🔹 Intento de validación básica
+  const w = window.open("https://openproject.casademoneda.gob.ar", "_blank");
+
+  setTimeout(()=>{
+    try {
+      if(!w || w.closed){
+        alert("❌ No se pudo abrir OpenProject. Verificá bloqueador de popups.");
+      } else {
+        // 🔹 Abrir descarga CSV
+        window.open(
+          "https://openproject.casademoneda.gob.ar/projects/nuevo-sistema-rrhh/work_packages.csv?query_id=960",
+          "_blank"
+        );
+      }
+    } catch(e){
+      alert("⚠️ Error al intentar acceder a OpenProject");
+    }
+  },1500);
 }
