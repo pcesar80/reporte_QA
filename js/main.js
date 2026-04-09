@@ -2,26 +2,46 @@ let dataOriginal=[];
 document.getElementById('fileInput').addEventListener('change',handleFile);
 document.getElementById('filtroVersion').addEventListener('change',aplicarFiltro);
 
-function handleFile(e){const r=new FileReader();r.onload=e=>{dataOriginal=parseCSV(e.target.result);cargarFiltroVersion(dataOriginal);procesar(dataOriginal);};r.readAsText(e.target.files[0]);}
+function handleFile(e){
+  const r=new FileReader();
+  r.onload=e=>{
+    dataOriginal=parseCSV(e.target.result);
+    cargarFiltroVersion(dataOriginal);
+    procesar(dataOriginal);
+  };
+  r.readAsText(e.target.files[0]);
+}
 
-function aplicarFiltro(){const v=document.getElementById("filtroVersion").value;procesar(v==="ALL"?dataOriginal:dataOriginal.filter(t=>t["versión"]===v));}
+function aplicarFiltro(){
+  const v=document.getElementById("filtroVersion").value;
+  procesar(v==="ALL"?dataOriginal:dataOriginal.filter(t=>t["versión"]===v));
+}
 
 function procesar(data){
+
 let estado={},severidad={},prioridad={};
 let tareas=[],sinFecha=[],proyectos=new Set();
 
-// 🔥 SOLO PARA EL GRÁFICO (AISLADO)
+// 🔥 GRÁFICO
 let tiempoPorIdTipo = {};
 let tiposSet = new Set();
+
+// 🔥 KPI NUEVO
+let tiempoPorTipo = {};
 
 data.forEach(t=>{
 const id=t.id;if(!id)return;
 
-// 🔥 BLOQUE NUEVO (NO INTERFIERE)
+// 🔥 UNA SOLA VEZ
+const tipoLimpio = (t.tipo || "").toLowerCase().trim();
+
+// 🔥 TIEMPO
 const tipo = t.tipo || "Sin tipo";
 const tiempo = parseFloat(t["tiempo invertido"]);
 
 if(!isNaN(tiempo) && tiempo > 0){
+
+  // gráfico
   tiposSet.add(tipo);
 
   if(!tiempoPorIdTipo[id]){
@@ -33,18 +53,28 @@ if(!isNaN(tiempo) && tiempo > 0){
   }
 
   tiempoPorIdTipo[id][tipo]+=tiempo;
+
+  // 🔥 KPI TIEMPO POR TIPO
+  if(!tiempoPorTipo[tipo]){
+    tiempoPorTipo[tipo]=0;
+  }
+
+  tiempoPorTipo[tipo]+=tiempo;
 }
 
-// 🔽 TODO ORIGINAL
+// 🔽 RESTO ORIGINAL
 
 if(t.proyecto)proyectos.add(t.proyecto);
 
 const est=(t.estado||"").trim();
 const estL=est.toLowerCase().replace(/\s/g,'');
-if(est)estado[est]=(estado[est]||0)+1;
 
-if(t.severidad)severidad[t.severidad]=(severidad[t.severidad]||0)+1;
-if(t.prioridad)prioridad[t.prioridad]=(prioridad[t.prioridad]||0)+1;
+// 🔥 SOLO ISSUES
+if(tipoLimpio.includes("issue")){
+  if(est)estado[est]=(estado[est]||0)+1;
+  if(t.severidad)severidad[t.severidad]=(severidad[t.severidad]||0)+1;
+  if(t.prioridad)prioridad[t.prioridad]=(prioridad[t.prioridad]||0)+1;
+}
 
 const inicio=parseFecha(t["fecha de inicio"]);
 const fin=parseFecha(t["fecha de finalización"]);
@@ -59,7 +89,7 @@ if(["closed","cerrado","done"].includes(estL)){
 
     sinFecha.push({
       id,
-      version:t["versión"],
+      tipo: t.tipo || "-",
       estado:est,
       motivo
     });
@@ -70,18 +100,22 @@ if(["closed","cerrado","done"].includes(estL)){
 if(!inicio){
   sinFecha.push({
     id,
-    version:t["versión"],
+    tipo: t.tipo || "-",
     estado:est,
     motivo:"Falta inicio"
   });
   return;
 }
 
-const dias=Math.floor((new Date()-inicio)/86400000);
-tareas.push({id,asunto:t.asunto||"-",estado:est,dias});
+// 🔥 TOP 5 SOLO ISSUES
+if(tipoLimpio.includes("issue")){
+  const dias=Math.floor((new Date()-inicio)/86400000);
+  tareas.push({id,asunto:t.asunto||"-",estado:est,dias});
+}
+
 });
 
-// 🔽 UI ORIGINAL
+// 🔽 UI
 
 document.getElementById("tituloProyecto").innerText=[...proyectos].join("_");
 
@@ -96,28 +130,33 @@ tareas.sort((a,b)=>b.dias-a.dias).slice(0,5).map(t=>`
 
 document.querySelector("#tablaSinFecha tbody").innerHTML=
 sinFecha.map(t=>`
-<tr>
+<tr class="${(t.tipo||'').toLowerCase().includes('caso') ? 'tipo-test' : 'tipo-issue'}">
 <td><a href="https://openproject.casademoneda.gob.ar/projects/nuevo-sistema-rrhh/work_packages/${t.id}/relations" target="_blank">${t.id}</a></td>
-<td>${t.version}</td>
+<td>${t.tipo || "-"}</td>
 <td>${t.estado}</td>
 <td>${t.motivo||""}</td>
 </tr>`).join("");
 
 document.querySelector("#tablaTodos tbody").innerHTML=
 data.map(t=>`
-<tr>
+<tr class="${(t.tipo||'').toLowerCase().includes('caso') ? 'tipo-test' : 'tipo-issue'}">
 <td><a href="https://openproject.casademoneda.gob.ar/projects/nuevo-sistema-rrhh/work_packages/${t.id}/relations" target="_blank">${t.id}</a></td>
+<td>${t.tipo||"-"}</td>
 <td>${t.asunto||"-"}</td>
 <td>${t.estado||"-"}</td>
 </tr>`).join("");
 
+// 🔽 KPI EXISTENTES
 generarTabla("tablaEstado",estado);
 generarTabla("tablaSeveridad",severidad);
 generarTabla("tablaPrioridad",prioridad);
 
+// 🔥 NUEVO KPI
+generarTabla("tablaTiempoTipo", tiempoPorTipo);
+
 crearGraficoUniforme("estadoChart","severidadChart","prioridadChart",{estado,severidad,prioridad});
 
-// 🔥 NUEVO GRÁFICO (PROTEGIDO)
+// 🔥 GRÁFICO TIEMPO
 try{
   renderGraficoTiempoAsignado({
     data: tiempoPorIdTipo,

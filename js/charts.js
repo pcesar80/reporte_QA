@@ -1,22 +1,97 @@
 let charts={};
 
-// 🔵 GRÁFICOS ORIGINALES (sin cambios funcionales)
+// 🔵 GRÁFICOS ORIGINALES (con títulos)
 function crearGraficoUniforme(id1,id2,id3,d){
   try {
     [id1,id2,id3].forEach(i=>charts[i]&&charts[i].destroy());
+
     const keys=Object.keys(d);
 
+    const coloresEstado = {
+      "new":"#2aa198",
+      "in specification":"#74b9ff",
+      "specified":"#74b9ff",
+      "in progress":"#be4bdb",
+      "developed":"#69db7c",
+      "in testing":"#15aabf",
+      "tested":"#12b886",
+      "test failed":"#fa5252",
+      "closed":"#adb5bd",
+      "rejected":"#ff6b6b",
+      "on hold":"#ffa94d"
+    };
+
+    const coloresPrioridad = {
+      "low":"#74c0fc",
+      "normal":"#228be6",
+      "high":"#ffd43b",
+      "immediate":"#fa5252"
+    };
+
+    const coloresSeveridad = {
+      "bloqueante":"#fa5252",
+      "alta":"#ff922b",
+      "media":"#228be6",
+      "baja":"#74c0fc"
+    };
+
     [id1,id2,id3].forEach((id,i)=>{
+
       const el = document.getElementById(id);
       if(!el) return;
 
+      const tipo = keys[i];
+      const labels = Object.keys(d[tipo]);
+      const values = Object.values(d[tipo]);
+
+      const colors = labels.map(label=>{
+        const l = (label || "").toLowerCase().trim();
+
+        if(tipo === "estado") return coloresEstado[l] || "#ccc";
+        if(tipo === "prioridad") return coloresPrioridad[l] || "#ccc";
+        if(tipo === "severidad") return coloresSeveridad[l] || "#ccc";
+
+        return "#ccc";
+      });
+
       charts[id]=new Chart(el,{
-        type:'pie',
+        type:'bar',
         data:{
-          labels:Object.keys(d[keys[i]]),
-          datasets:[{data:Object.values(d[keys[i]])}]
+          labels: labels,
+          datasets:[{
+            data: values,
+            backgroundColor: colors,
+            borderWidth:1
+          }]
+        },
+        options:{
+          indexAxis:'y',
+          responsive:true,
+          plugins:{
+            title:{
+              display:true,
+              text: tipo.charAt(0).toUpperCase() + tipo.slice(1),
+              align:'center',
+              font:{
+                size:16,
+                weight:'bold'
+              }
+            },
+            legend:{display:false},
+            tooltip:{
+              callbacks:{
+                label:function(context){
+                  return `Cantidad: ${context.raw}`;
+                }
+              }
+            }
+          },
+          scales:{
+            x:{beginAtZero:true}
+          }
         }
       });
+
     });
 
   } catch(e){
@@ -24,7 +99,7 @@ function crearGraficoUniforme(id1,id2,id3,d){
   }
 }
 
-// 🔥 NUEVO: GRÁFICO TIEMPO (ID + TIPO)
+// 🔥 GRÁFICO TIEMPO (con título)
 function renderGraficoTiempoAsignado(obj){
 
   try {
@@ -44,8 +119,8 @@ function renderGraficoTiempoAsignado(obj){
       const tipoLimpio = (tipo || "").toLowerCase().trim();
 
       const color = tipoLimpio.includes("casos de prueba")
-        ? "#2ecc71" // 🟢 Casos de prueba
-        : "#e74c3c"; // 🔴 Issues
+        ? "#2ecc71"
+        : "#e74c3c";
 
       return {
         label: tipo,
@@ -63,14 +138,29 @@ function renderGraficoTiempoAsignado(obj){
       options:{
         responsive:true,
         plugins:{
-          legend:{display:true}
+          title:{
+            display:true,
+            text:"Tiempo invertido por ID y Tipo",
+            align:'center',
+            font:{
+              size:16,
+              weight:'bold'
+            }
+          },
+          legend:{display:true},
+          tooltip:{
+            callbacks:{
+              label:function(context){
+                return `${context.dataset.label}: ${context.raw} hs`;
+              }
+            }
+          }
         },
         scales:{
           x:{stacked:true},
           y:{stacked:true}
         },
 
-        // 🔗 CLICK EN BARRA → abre issue
         onClick: function(evt, elements){
           try {
             if(!elements || elements.length === 0) return;
@@ -89,7 +179,6 @@ function renderGraficoTiempoAsignado(obj){
       }
     });
 
-    // 🖱️ cursor tipo link
     canvas.style.cursor = "pointer";
 
   } catch(e){

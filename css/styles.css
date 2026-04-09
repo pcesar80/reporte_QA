@@ -58,8 +58,8 @@ h1 { color: #2f3640; margin: 0; }
 
 .grid-kpi {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
 }
 
 .grid-graficos {
@@ -112,4 +112,12 @@ th { background: #eee; }
   background: transparent;
   border-bottom: 15px solid rgb(255, 255, 255);
   margin-bottom: 15px;
+}
+
+.tipo-issue {
+  background-color: #ffe6e6; /* rojo suave */
+}
+
+.tipo-test {
+  background-color: #e6ffe6; /* verde suave */
 }

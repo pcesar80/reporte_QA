@@ -38,7 +38,7 @@
 <div class="tabs">
   <button class="tab-button active" onclick="showView('mainView', this)">Indicadores / Top 5</button>
   <button class="tab-button" onclick="showView('noDateView', this)">Issues sin fecha</button>
-  <button class="tab-button" onclick="showView('allIssuesView', this)">Todos los issues</button>
+  <button class="tab-button" onclick="showView('allIssuesView', this)">Todas las tareas de QA</button>
 </div>
 
 <div id="mainView" class="view active">
@@ -59,6 +59,7 @@
     <div class="card"><h3>Estado</h3><table id="tablaEstado"></table></div>
     <div class="card"><h3>Severidad</h3><table id="tablaSeveridad"></table></div>
     <div class="card"><h3>Prioridad</h3><table id="tablaPrioridad"></table></div>
+    <div class="card"><h3>Tiempo por Tipo (hs)</h3><table id="tablaTiempoTipo"></table></div>
   </div>
 
   <h2>📊 Gráficos</h2>
@@ -68,27 +69,27 @@
     <div class="card"><canvas id="prioridadChart"></canvas></div>
   </div>
 
-  <h2>📈 Tiempo por asignado</h2>
+  <h2>📈 Horas asignadas a tareas QA</h2>
   <div class="card">
     <canvas id="tiempoChart" style="height:300px !important;"></canvas>
   </div>
 </div>
 
 <div id="noDateView" class="view">
-  <h2>⚠️ Issues sin fecha</h2>
+  <h2>⚠️ Tareas sin fecha</h2>
   <div class="card">
     <table id="tablaSinFecha">
-      <thead><tr><th>ID</th><th>Versión</th><th>Estado</th><th>Motivo Error</th></tr></thead>
+      <thead><tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Motivo</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
 </div>
 
 <div id="allIssuesView" class="view">
-  <h2>📋 Todos los issues</h2>
+  <h2>📋 Todas las tareas de QA</h2>
   <div class="card">
     <table id="tablaTodos">
-      <thead><tr><th>ID</th><th>Descripción</th><th>Estado</th></tr></thead>
+      <thead><tr><th>ID</th><th>Tipo</th><th>Descripción</th><th>Estado</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
