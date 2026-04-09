@@ -117,7 +117,10 @@ if(tipoLimpio.includes("issue")){
 
 // 🔽 UI
 
-document.getElementById("tituloProyecto").innerText=[...proyectos].join("_");
+const versionSeleccionada = document.getElementById("filtroVersion").value;
+
+document.getElementById("tituloProyecto").innerText =
+  [...proyectos].join("_") + " - " + (versionSeleccionada === "ALL" ? "Todas las versiones" : versionSeleccionada);
 
 document.querySelector("#topTareas tbody").innerHTML=
 tareas.sort((a,b)=>b.dias-a.dias).slice(0,5).map(t=>`
