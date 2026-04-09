@@ -1,62 +1,79 @@
-let dataOriginal=[];
-document.getElementById('fileInput').addEventListener('change',handleFile);
-document.getElementById('filtroVersion').addEventListener('change',aplicarFiltro);
-
-function handleFile(e){const r=new FileReader();r.onload=e=>{dataOriginal=parseCSV(e.target.result);cargarFiltroVersion(dataOriginal);procesar(dataOriginal);};r.readAsText(e.target.files[0]);}
-
-function aplicarFiltro(){const v=document.getElementById("filtroVersion").value;procesar(v==="ALL"?dataOriginal:dataOriginal.filter(t=>t["versión"]===v));}
-
-function procesar(data){
-let estado={},severidad={},prioridad={};
-let tareas=[],sinFecha=[],proyectos=new Set();
+// 🔥 NUEVO → estructura para ID + Tipo
+let tiempoPorIdTipo = {};
+let tiposSet = new Set();
 
 data.forEach(t=>{
-const id=t.id;if(!id)return;
-if(t.proyecto)proyectos.add(t.proyecto);
-
-const est=(t.estado||"").trim();
-const estL=est.toLowerCase().replace(/\s/g,'');
-if(est)estado[est]=(estado[est]||0)+1;
-
-if(t.severidad)severidad[t.severidad]=(severidad[t.severidad]||0)+1;
-if(t.prioridad)prioridad[t.prioridad]=(prioridad[t.prioridad]||0)+1;
-
-const inicio=parseFecha(t["fecha de inicio"]);
-const fin=parseFecha(t["fecha de finalización"]);
-
-// 🔴 CLOSED → validar inicio Y fin
-if(["closed","cerrado","done"].includes(estL)){
-  if(!inicio || !fin){
-
-    let motivo="";
-    if(!inicio && !fin) motivo="Falta inicio y fin";
-    else if(!inicio) motivo="Falta inicio";
-    else if(!fin) motivo="Falta fin";
-
+  
+  const id=t.id;if(!id)return;
+  
+  // 🔥 PRIMERO → TIEMPO (NO depende de validaciones)
+  const tipo = t.tipo || "Sin tipo";
+  const tiempo = parseFloat(t["tiempo invertido"]);
+  
+  // ✅ ignorar 0, null, NaN
+  if(!isNaN(tiempo) && tiempo > 0){
+  
+    tiposSet.add(tipo);
+  
+    if(!tiempoPorIdTipo[id]){
+      tiempoPorIdTipo[id] = {};
+    }
+  
+    if(!tiempoPorIdTipo[id][tipo]){
+      tiempoPorIdTipo[id][tipo] = 0;
+    }
+  
+    tiempoPorIdTipo[id][tipo] += tiempo;
+  }
+  
+  // 🔽 TODO LO DEMÁS QUEDA IGUAL
+  
+  if(t.proyecto)proyectos.add(t.proyecto);
+  
+  const est=(t.estado||"").trim();
+  const estL=est.toLowerCase().replace(/\s/g,'');
+  if(est)estado[est]=(estado[est]||0)+1;
+  
+  if(t.severidad)severidad[t.severidad]=(severidad[t.severidad]||0)+1;
+  if(t.prioridad)prioridad[t.prioridad]=(prioridad[t.prioridad]||0)+1;
+  
+  const inicio=parseFecha(t["fecha de inicio"]);
+  const fin=parseFecha(t["fecha de finalización"]);
+  
+  // 🔴 CLOSED → validar inicio Y fin
+  if(["closed","cerrado","done"].includes(estL)){
+    if(!inicio || !fin){
+  
+      let motivo="";
+      if(!inicio && !fin) motivo="Falta inicio y fin";
+      else if(!inicio) motivo="Falta inicio";
+      else if(!fin) motivo="Falta fin";
+  
+      sinFecha.push({
+        id,
+        version:t["versión"],
+        estado:est,
+        motivo
+      });
+    }
+    return;
+  }
+  
+  // 🟡 NO CLOSED → validar inicio
+  if(!inicio){
     sinFecha.push({
       id,
       version:t["versión"],
       estado:est,
-      motivo
+      motivo:"Falta inicio"
     });
+    return;
   }
-  return;
-}
-
-// 🟡 NO CLOSED → validar inicio
-if(!inicio){
-  sinFecha.push({
-    id,
-    version:t["versión"],
-    estado:est,
-    motivo:"Falta inicio"
+  
+  const dias=Math.floor((new Date()-inicio)/86400000);
+  tareas.push({id,asunto:t.asunto||"-",estado:est,dias});
+  
   });
-  return;
-}
-
-const dias=Math.floor((new Date()-inicio)/86400000);
-tareas.push({id,asunto:t.asunto||"-",estado:est,dias});
-});
 
 document.getElementById("tituloProyecto").innerText=[...proyectos].join("_");
 
@@ -91,39 +108,11 @@ generarTabla("tablaSeveridad",severidad);
 generarTabla("tablaPrioridad",prioridad);
 
 crearGraficoUniforme("estadoChart","severidadChart","prioridadChart",{estado,severidad,prioridad});
-}
 
-/*function cargarDesdeOpenProject(){
-const w=window.open("https://openproject.casademoneda.gob.ar","");
-setTimeout(()=>{
-if(!w||w.closed){
-alert("⚠️ Debes iniciar sesión en OpenProject primero");
-}else{
-window.open("https://openproject.casademoneda.gob.ar/projects/nuevo-sistema-rrhh/work_packages.csv?query_id=960");
-}
-},1500);
-}*/
-function cargarDesdeOpenProject(){
+// 🔥 REEMPLAZO DEL GRÁFICO
+renderGraficoTiempoAsignado({
+  data: tiempoPorIdTipo,
+  tipos: Array.from(tiposSet)
+});
 
-  // 🔹 Mostrar aviso SIEMPRE
-  alert("⚠️ Recordá: debés estar logueado en OpenProject para poder descargar el CSV");
-
-  // 🔹 Intento de validación básica
-  const w = window.open("https://openproject.casademoneda.gob.ar", "_blank");
-
-  setTimeout(()=>{
-    try {
-      if(!w || w.closed){
-        alert("❌ No se pudo abrir OpenProject. Verificá bloqueador de popups.");
-      } else {
-        // 🔹 Abrir descarga CSV
-        window.open(
-          "https://openproject.casademoneda.gob.ar/projects/nuevo-sistema-rrhh/work_packages.csv?query_id=960",
-          "_blank"
-        );
-      }
-    } catch(e){
-      alert("⚠️ Error al intentar acceder a OpenProject");
-    }
-  },1500);
 }
