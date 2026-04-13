@@ -48,7 +48,12 @@
   <div class="card">
     <table id="topTareas">
       <thead>
-        <tr><th>ID</th><th>Asunto</th><th>Estado</th><th>Días abierta</th></tr>
+        <tr>
+          <th style="cursor:pointer" onclick="ordenarTop5(0)">ID ⬍</th>
+          <th style="cursor:pointer" onclick="ordenarTop5(1)">Asunto ⬍</th>
+          <th style="cursor:pointer" onclick="ordenarTop5(2)">Estado ⬍</th>
+          <th style="cursor:pointer" onclick="ordenarTop5(3)">Días abierta ⬍</th>
+        </tr>
       </thead>
       <tbody></tbody>
     </table>

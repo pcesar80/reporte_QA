@@ -22,26 +22,21 @@ function procesar(data){
 let estado={},severidad={},prioridad={};
 let tareas=[],sinFecha=[],proyectos=new Set();
 
-// 🔥 GRÁFICO
 let tiempoPorIdTipo = {};
 let tiposSet = new Set();
 
-// 🔥 KPI NUEVO
 let tiempoPorTipo = {};
 
 data.forEach(t=>{
 const id=t.id;if(!id)return;
 
-// 🔥 UNA SOLA VEZ
 const tipoLimpio = (t.tipo || "").toLowerCase().trim();
 
-// 🔥 TIEMPO
 const tipo = t.tipo || "Sin tipo";
 const tiempo = parseFloat(t["tiempo invertido"]);
 
 if(!isNaN(tiempo) && tiempo > 0){
 
-  // gráfico
   tiposSet.add(tipo);
 
   if(!tiempoPorIdTipo[id]){
@@ -54,7 +49,6 @@ if(!isNaN(tiempo) && tiempo > 0){
 
   tiempoPorIdTipo[id][tipo]+=tiempo;
 
-  // 🔥 KPI TIEMPO POR TIPO
   if(!tiempoPorTipo[tipo]){
     tiempoPorTipo[tipo]=0;
   }
@@ -62,14 +56,11 @@ if(!isNaN(tiempo) && tiempo > 0){
   tiempoPorTipo[tipo]+=tiempo;
 }
 
-// 🔽 RESTO ORIGINAL
-
 if(t.proyecto)proyectos.add(t.proyecto);
 
 const est=(t.estado||"").trim();
 const estL=est.toLowerCase().replace(/\s/g,'');
 
-// 🔥 SOLO ISSUES
 if(tipoLimpio.includes("issue")){
   if(est)estado[est]=(estado[est]||0)+1;
   if(t.severidad)severidad[t.severidad]=(severidad[t.severidad]||0)+1;
@@ -107,7 +98,6 @@ if(!inicio){
   return;
 }
 
-// 🔥 TOP 5 SOLO ISSUES
 if(tipoLimpio.includes("issue")){
   const dias=Math.floor((new Date()-inicio)/86400000);
   tareas.push({id,asunto:t.asunto||"-",estado:est,dias});
@@ -115,7 +105,7 @@ if(tipoLimpio.includes("issue")){
 
 });
 
-// 🔽 UI
+// UI
 
 const versionSeleccionada = document.getElementById("filtroVersion").value;
 
@@ -149,17 +139,14 @@ data.map(t=>`
 <td>${t.estado||"-"}</td>
 </tr>`).join("");
 
-// 🔽 KPI EXISTENTES
+// KPI
 generarTabla("tablaEstado",estado);
 generarTabla("tablaSeveridad",severidad);
 generarTabla("tablaPrioridad",prioridad);
-
-// 🔥 NUEVO KPI
 generarTabla("tablaTiempoTipo", tiempoPorTipo);
 
 crearGraficoUniforme("estadoChart","severidadChart","prioridadChart",{estado,severidad,prioridad});
 
-// 🔥 GRÁFICO TIEMPO
 try{
   renderGraficoTiempoAsignado({
     data: tiempoPorIdTipo,
@@ -171,9 +158,8 @@ try{
 
 }
 
-// 🔽 NO SE TOCA
+// NO SE TOCA
 function cargarDesdeOpenProject(){
-
   alert("⚠️ Recordá: debés estar logueado en OpenProject para poder descargar el CSV");
 
   const w = window.open("https://openproject.casademoneda.gob.ar", "_blank");
@@ -193,3 +179,33 @@ function cargarDesdeOpenProject(){
     }
   },1500);
 }
+
+
+// ✅ SOLO TOP 5
+window.ordenTop5 = {};
+
+window.ordenarTop5 = function(colIndex) {
+    const tabla = document.getElementById("topTareas");
+    if (!tabla) return;
+
+    const tbody = tabla.querySelector("tbody");
+    const filas = Array.from(tbody.querySelectorAll("tr"));
+
+    window.ordenTop5[colIndex] = !window.ordenTop5[colIndex];
+    const asc = window.ordenTop5[colIndex];
+
+    filas.sort((a, b) => {
+        let A = a.children[colIndex].innerText.trim();
+        let B = b.children[colIndex].innerText.trim();
+
+        if (!isNaN(A) && !isNaN(B)) {
+            return asc ? A - B : B - A;
+        }
+
+        return asc
+            ? A.localeCompare(B, undefined, { numeric: true })
+            : B.localeCompare(A, undefined, { numeric: true });
+    });
+
+    filas.forEach(f => tbody.appendChild(f));
+};
